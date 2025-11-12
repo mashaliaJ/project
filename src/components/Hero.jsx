@@ -1,5 +1,5 @@
 import React from 'react';
-import HeroImage from './images/Heroimage.jpeg';
+import Grocery from '../components/images/Grocery.jpg';
 import { Link } from 'react-router-dom';
 
 const Hero = () => {
@@ -8,7 +8,7 @@ const Hero = () => {
       
       {/* Fullscreen Hero Image */}
       <img
-        src={HeroImage}
+        src={Grocery}
         alt="hero"
         className="w-full h-full object-cover"
       />

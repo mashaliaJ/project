@@ -9,6 +9,7 @@ const LatestCollection = () => {
 
   useEffect(() => {
     if (products && products.length > 0) {
+      // Show the latest 10 products
       setLatestProducts(products.slice(0, 10));
     }
   }, [products]);
@@ -22,17 +23,22 @@ const LatestCollection = () => {
         </p>
       </div>
 
-      {/* Rendering Products */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-y-6">
-        {latestProducts.map((item, index) => (
-          <ProductItem
-            key={index}
-            id={item.id}       
-            image={item.image}
-            name={item.name}
-            price={item.price}
-          />
-        ))}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-y-6 gap-x-4">
+        {latestProducts.length > 0 ? (
+          latestProducts.map((item) => (
+            <ProductItem
+              key={item._id}
+              _id={item._id}      // <-- pass _id
+              image={item.image}
+              name={item.name}
+              price={item.price}
+            />
+          ))
+        ) : (
+          <p className="col-span-full text-center text-gray-500">
+            No products found.
+          </p>
+        )}
       </div>
     </div>
   );

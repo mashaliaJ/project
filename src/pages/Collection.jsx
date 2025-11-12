@@ -16,7 +16,7 @@ const Collection = () => {
   const [sortOption, setSortOption] = useState("relevant");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Initialize available categories and default filtered products
+  // Initialize categories and filtered products
   useEffect(() => {
     const uniqueCategories = [...new Set(products.map((p) => p.category))];
     setAvailableCategories(uniqueCategories);
@@ -35,45 +35,39 @@ const Collection = () => {
   const toggleCategory = (e) => {
     const value = e.target.value;
     const isChecked = e.target.checked;
-
     setCategories((prev) =>
       isChecked ? [...prev, value] : prev.filter((c) => c !== value)
     );
   };
 
-  // Filter products by category, search query, and sort option
+  // Filter & sort products
   useEffect(() => {
     let filtered = [...products];
 
-    // Filter by categories
     if (categories.length > 0) {
       filtered = filtered.filter((p) => categories.includes(p.category));
     }
 
-    // Filter by search query
     if (searchQuery) {
       filtered = filtered.filter((p) =>
         p.name.toLowerCase().includes(searchQuery)
       );
     }
 
-    // Apply sorting
     if (sortOption === "low-high") filtered.sort((a, b) => a.price - b.price);
     if (sortOption === "high-low") filtered.sort((a, b) => b.price - a.price);
 
     setFilterProducts(filtered);
   }, [categories, sortOption, products, searchQuery]);
 
-  // Clear all filters
   const clearFilters = () => {
     setCategories([]);
     setSortOption("relevant");
-    navigate("/collection"); // clear search query
+    navigate("/collection");
   };
 
   return (
     <div className="flex flex-col sm:flex-row gap-4 sm:gap-10 border-t py-6 px-4 sm:px-0">
-
       {/* LEFT SIDE - Filters */}
       <div className="min-w-60">
         <p
@@ -83,7 +77,11 @@ const Collection = () => {
           FILTERS
         </p>
 
-        <div className={`border border-gray-300 pl-5 py-3 mt-4 ${showFilter ? "" : "hidden"} sm:block`}>
+        <div
+          className={`border border-gray-300 pl-5 py-3 mt-4 ${
+            showFilter ? "" : "hidden"
+          } sm:block`}
+        >
           <p className="mb-3 text-sm font-medium">CATEGORIES</p>
           <div className="flex flex-col gap-2 text-sm font-light text-gray-700">
             {availableCategories.map((cat) => (
@@ -127,8 +125,8 @@ const Collection = () => {
           {filterProducts.length > 0 ? (
             filterProducts.map((item) => (
               <ProductItem
-                key={item.id}
-                id={item.id}
+                key={item._id}       // ✅ Use MongoDB _id
+                _id={item._id}       // ✅ Pass _id to ProductItem
                 name={item.name}
                 price={item.price}
                 image={item.image}

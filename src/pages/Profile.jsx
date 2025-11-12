@@ -1,59 +1,87 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const Profile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // ✅ Check login status on mount
-  useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    if (!storedUser) {
-      navigate("/login"); // redirect if not logged in
-    } else {
-      setUser(storedUser);
-    }
-  }, [navigate]);
-
-  // ✅ Handle logout
+  // ✅ Logout handler
   const handleLogout = () => {
     localStorage.removeItem("user");
-    navigate("/"); // redirect to homepage
+    localStorage.removeItem("token");
+    navigate("/login");
   };
 
-  if (!user) return null; // avoid flicker before redirect
+  // ✅ Load user info from localStorage
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
 
+    if (!token || !savedUser) {
+      handleLogout(); // not logged in → logout
+      return;
+    }
+
+    try {
+      const parsedUser = JSON.parse(savedUser);
+      setUser(parsedUser);
+    } catch (error) {
+      console.error("Error parsing user from localStorage:", error);
+      handleLogout();
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center bg-gray-50">
+        <p className="text-gray-600">Loading profile...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex justify-center items-center bg-gray-50">
+        <p className="text-red-600">No user data found. Please log in again.</p>
+      </div>
+    );
+  }
+
+  // ✅ Main Profile UI
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50">
-      <div className="bg-white p-8 rounded-lg shadow-md w-96">
-        <h2 className="text-2xl font-bold mb-4 text-center text-green-700">
-          My Profile
+    <div className="min-h-screen flex justify-center items-center bg-gray-50 p-4">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 text-center">
+        <h2 className="text-2xl font-bold text-green-700 mb-3">
+          Welcome, {user?.name || "User"} 👋
         </h2>
+        <p className="text-gray-600 mb-4">
+          {user?.email || "No email available"}
+        </p>
 
-        <div className="mb-4">
-          <p className="text-gray-700 mb-2">
-            <strong>Name:</strong> {user.name}
-          </p>
-          <p className="text-gray-700 mb-2">
-            <strong>Email:</strong> {user.email}
-          </p>
+        <div className="space-y-3 mb-6">
+          <Link
+            to="/orders"
+            className="block bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
+          >
+            View My Orders
+          </Link>
+          <Link
+            to="/cart"
+            className="block bg-gray-800 text-white py-2 rounded hover:bg-gray-900 transition"
+          >
+            Go to Cart
+          </Link>
         </div>
 
-        <div className="flex flex-col gap-3">
-          <button
-            onClick={() => navigate("/orders")}
-            className="bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
-          >
-            View Orders
-          </button>
-
-          <button
-            onClick={handleLogout}
-            className="bg-red-600 text-white py-2 rounded hover:bg-red-700 transition"
-          >
-            Logout
-          </button>
-        </div>
+        <button
+          onClick={handleLogout}
+          className="text-red-600 hover:underline"
+        >
+          Logout
+        </button>
       </div>
     </div>
   );
