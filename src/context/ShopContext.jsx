@@ -1,17 +1,19 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useMemo } from "react";
 import axios from "axios";
 
+// Create context
 export const ShopContext = createContext();
 
 const ShopContextProvider = ({ children }) => {
+  // Basic info
   const currency = "Ksh";
   const delivery_fee = 250;
 
-  // Cart and products
+  // Cart and products state
   const [cartItems, setCartItems] = useState({});
   const [products, setProducts] = useState([]);
 
-  // Safe user from localStorage
+  // User from localStorage (safe parsing)
   const [user, setUser] = useState(() => {
     try {
       const storedUser = localStorage.getItem("user");
@@ -22,19 +24,24 @@ const ShopContextProvider = ({ children }) => {
     }
   });
 
-  // Fetch products from backend
+  // Base API URL (switch between dev and prod)
+  const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
+  // Fetch products on mount
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get("https://project-backend-1-w227.onrender.com");
+        const res = await axios.get(`${BASE_URL}/products`);
+        console.log("Fetched products:", res.data);
         if (Array.isArray(res.data)) setProducts(res.data);
         else setProducts([]);
       } catch (err) {
         console.error("Error fetching products:", err);
+        setProducts([]);
       }
     };
     fetchProducts();
-  }, []);
+  }, [BASE_URL]);
 
   // Add item to cart
   const addToCart = (itemId) => {
@@ -55,11 +62,11 @@ const ShopContextProvider = ({ children }) => {
     });
   };
 
-  // Total items in cart
+  // Get total number of items in cart
   const getCartCount = () =>
     Object.values(cartItems).reduce((total, qty) => total + qty, 0);
 
-  // Total price
+  // Get total price of items in cart
   const getCartTotal = () =>
     Object.entries(cartItems).reduce((total, [id, qty]) => {
       const product = products.find((p) => p._id === id);
@@ -67,23 +74,27 @@ const ShopContextProvider = ({ children }) => {
       return total + Number(product.price) * qty;
     }, 0);
 
-  // Clear cart
+  // Clear entire cart
   const clearCart = () => setCartItems({});
 
-  const value = {
-    products,
-    currency,
-    delivery_fee,
-    cartItems,
-    addToCart,
-    removeFromCart,
-    getCartCount,
-    getCartTotal,
-    setCartItems,
-    clearCart,
-    user,
-    setUser,
-  };
+  // Memoize context value for performance
+  const value = useMemo(
+    () => ({
+      products,
+      currency,
+      delivery_fee,
+      cartItems,
+      addToCart,
+      removeFromCart,
+      getCartCount,
+      getCartTotal,
+      setCartItems,
+      clearCart,
+      user,
+      setUser,
+    }),
+    [products, cartItems, user]
+  );
 
   return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;
 };
