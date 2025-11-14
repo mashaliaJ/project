@@ -26,7 +26,7 @@ const ShopContextProvider = ({ children }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/products");
+        const res = await axios.get("https://project-backend-1-w227.onrender.com");
         if (Array.isArray(res.data)) setProducts(res.data);
         else setProducts([]);
       } catch (err) {
